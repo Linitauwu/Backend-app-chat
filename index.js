@@ -7,6 +7,7 @@ const db = require("./database.js");
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const mysql = require("mysql");
 
 const DB_HOST = process.env.DB_HOST || "localhost";
 const DB_USER = process.env.DB_USER || "root";
@@ -17,7 +18,7 @@ const db = mysql.createConnection({
   host: DB_HOST,
   user: DB_USER,
   password: DB_PASSWORD,
-  database: DB_NAME
+  database: DB_NAME,
 });
 
 app.use(cors({
