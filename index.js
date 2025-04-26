@@ -738,6 +738,6 @@ io.on("connection", (socket) => {
 // INICIAR SERVIDOR
 // ==============================================
 
-server.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto 4000`);
+server.listen(4000, () => {
+  console.log("Servidor corriendo en puerto 4000");
 });
