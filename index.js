@@ -8,7 +8,22 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 
-app.use(cors());
+const DB_HOST = process.env.DB_HOST || "localhost";
+const DB_USER = process.env.DB_USER || "root";
+const DB_PASSWORD = process.env.DB_PASSWORD || "";
+const DB_NAME = process.env.DB_NAME || "tutores";
+
+const db = mysql.createConnection({
+  host: DB_HOST,
+  user: DB_USER,
+  password: DB_PASSWORD,
+  database: DB_NAME
+});
+
+app.use(cors({
+  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Usa la URL del frontend en producción
+  methods: ["GET", "POST"]
+}));
 app.use(express.json());
 
 // Crear el directorio 'imagenes' si no existe
@@ -19,11 +34,12 @@ if (!fs.existsSync(imageDir)) {
 
 // Serve static files from the 'imagenes' folder
 app.use('/imagenes', express.static(imageDir));
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
@@ -353,7 +369,7 @@ app.post("/createRoom", upload.single('fotoSala'), async (req, res) => {
 app.get("/api/rooms", async (req, res) => {
   try {
     const [rooms] = await db.query(
-      "SELECT id, name, description, CONCAT('http://localhost:4000/imagenes/', image_url) AS image_url, is_private, average_rating FROM chat_rooms"
+      "SELECT id, name, description, CONCAT('${BASE_URL}/imagenes/', image_url) AS image_url, is_private, average_rating FROM chat_rooms"
     );
     res.json(rooms);
   } catch (err) {
@@ -738,6 +754,7 @@ io.on("connection", (socket) => {
 // INICIAR SERVIDOR
 // ==============================================
 
-server.listen(4000, () => {
-  console.log("Servidor corriendo en puerto 4000");
+const PORT = process.env.PORT || 4000; // Usa el puerto asignado por Render o 4000 como respaldo
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
 });
