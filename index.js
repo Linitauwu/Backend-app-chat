@@ -8,10 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
 
-app.use(cors({
-  origin: process.env.FRONTEND_URL || "http://localhost:5173", // Usa la URL del frontend en producción
-  methods: ["GET", "POST"]
-}));
+app.use(cors());
 app.use(express.json());
 
 // Crear el directorio 'imagenes' si no existe
@@ -741,7 +738,6 @@ io.on("connection", (socket) => {
 // INICIAR SERVIDOR
 // ==============================================
 
-const PORT = process.env.PORT || 4000; // Usa el puerto asignado por Render o 4000 como respaldo
 server.listen(PORT, () => {
-  console.log(`Servidor corriendo en puerto ${PORT}`);
+  console.log(`Servidor corriendo en puerto 4000`);
 });
