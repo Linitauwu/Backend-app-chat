@@ -1,18 +1,26 @@
+require('dotenv').config();
 const express = require("express");
 const app = express();
 const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const db = require("./database.js");
-const path = require('path');
-const fs = require('fs');
-const multer = require('multer');
+const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
 
-app.use(cors());
+const PORT = process.env.PORT || 4000;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
+app.use(cors({
+  origin: FRONTEND_URL,
+  methods: ["GET", "POST"],
+}));
 app.use(express.json());
 
 // Crear el directorio 'imagenes' si no existe
-const imageDir = path.join(__dirname, 'imagenes');
+const imageDir = path.join(__dirname, "imagenes");
 if (!fs.existsSync(imageDir)) {
   fs.mkdirSync(imageDir);
 }
@@ -23,11 +31,10 @@ app.use('/imagenes', express.static(imageDir));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
     methods: ["GET", "POST"],
   },
 });
-
 const handleSubmit = async (e) => {
   e.preventDefault();
   console.log("Formulario enviado"); // Verifica que esto aparece en la consola
@@ -75,13 +82,15 @@ const handleSubmit = async (e) => {
 // Configuración de multer para manejar la carga de archivos
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'imagenes/');
+    cb(null, "imagenes/");
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
+    cb(null, Date.now() + "-" + file.originalname);
+  },
 });
 const upload = multer({ storage: storage });
+
+
 
 // ==============================================
 // ENDPOINTS DE USUARIO
@@ -353,7 +362,10 @@ app.post("/createRoom", upload.single('fotoSala'), async (req, res) => {
 app.get("/api/rooms", async (req, res) => {
   try {
     const [rooms] = await db.query(
-      "SELECT id, name, description, CONCAT('http://localhost:4000/imagenes/', image_url) AS image_url, is_private, average_rating FROM chat_rooms"
+      `SELECT id, name, description, 
+      CONCAT('${BASE_URL}/imagenes/', image_url) AS image_url, 
+      is_private, average_rating 
+      FROM chat_rooms`
     );
     res.json(rooms);
   } catch (err) {
@@ -668,17 +680,14 @@ app.post("/api/ratings", async (req, res) => {
 io.on("connection", (socket) => {
   console.log("Nuevo usuario conectado:", socket.id);
 
-  // Unirse a una sala de chat
-  socket.on("join_room", (room) => {
-    if (!room) {
-      console.error("Sala no especificada");
-      return;
-    }
-
-    console.log("Intentando unirse a la sala:", room);
-    socket.join(room);
-    console.log(`Usuario unido a la sala: ${room}`);
+  socket.on("disconnect", (reason) => {
+    console.log(`Usuario desconectado: ${socket.id}, razón: ${reason}`);
   });
+
+  socket.on("error", (err) => {
+    console.error(`Error en Socket.IO: ${err}`);
+  });
+});
 
   // Unirse a una sala de ratings
   socket.on("join_rating_room", (roomId) => {
@@ -732,12 +741,16 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("Usuario desconectado:", socket.id);
   });
-});
+
 
 // ==============================================
 // INICIAR SERVIDOR
 // ==============================================
 
-server.listen(4000, () => {
-  console.log("Servidor corriendo en puerto 4000");
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor corriendo en ${BASE_URL}`);
 });
