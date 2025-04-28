@@ -680,15 +680,6 @@ app.post("/api/ratings", async (req, res) => {
 io.on("connection", (socket) => {
   console.log("Nuevo usuario conectado:", socket.id);
 
-  socket.on("disconnect", (reason) => {
-    console.log(`Usuario desconectado: ${socket.id}, razón: ${reason}`);
-  });
-
-  socket.on("error", (err) => {
-    console.error(`Error en Socket.IO: ${err}`);
-  });
-});
-
   // Unirse a una sala de ratings
   socket.on("join_rating_room", (roomId) => {
     socket.join(`ratings_${roomId}`);
@@ -741,6 +732,7 @@ io.on("connection", (socket) => {
   socket.on("disconnect", () => {
     console.log("Usuario desconectado:", socket.id);
   });
+});
 
 
 // ==============================================
@@ -751,6 +743,3 @@ server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
 
-app.listen(PORT, () => {
-  console.log(`Servidor corriendo en ${BASE_URL}`);
-});
