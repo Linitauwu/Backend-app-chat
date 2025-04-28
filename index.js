@@ -252,7 +252,6 @@ app.post("/api/login", async (req, res) => {
     // Buscar en la tabla de tutores
     const [tutor] = await db.query('SELECT * FROM tutor WHERE Tutor = ? AND Contrasena = ?', [usuario, contrasena]);
     if (tutor.length > 0) {
-      // Obtener las salas a las que el tutor está unido
       const [rooms] = await db.query(`
         SELECT chat_rooms.*
         FROM chat_rooms
@@ -266,7 +265,6 @@ app.post("/api/login", async (req, res) => {
     // Buscar en la tabla de alumnos
     const [alumno] = await db.query('SELECT * FROM alumnos WHERE Gmail = ? AND Contraseña = ?', [usuario, contrasena]);
     if (alumno.length > 0) {
-      // Obtener las salas a las que el alumno está unido
       const [rooms] = await db.query(`
         SELECT chat_rooms.*
         FROM chat_rooms
@@ -277,7 +275,6 @@ app.post("/api/login", async (req, res) => {
       return;
     }
 
-    // Si no se encuentra en ninguna tabla
     res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
   } catch (error) {
     console.error('Error en login:', error);
