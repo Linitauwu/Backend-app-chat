@@ -248,9 +248,18 @@ app.post("/api/saveExamResults", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { usuario, contrasena } = req.body;
 
+  // Validar que los campos no estén vacíos
+  if (!usuario || !contrasena) {
+    return res.status(400).json({ error: "El campo usuario y contrasena son obligatorios" });
+  }
+
   try {
     // Buscar en la tabla de tutores
-    const [tutor] = await db.query('SELECT * FROM tutor WHERE Tutor = ? AND Contrasena = ?', [usuario, contrasena]);
+    const [tutor] = await db.query('SELECT * FROM tutor WHERE Tutor = ? AND Contrasena = ?', [usuario, contrasena])
+      .catch(err => {
+        console.error("Error en consulta SQL para tutor:", err);
+        throw err;
+      });
     if (tutor.length > 0) {
       const [rooms] = await db.query(`
         SELECT chat_rooms.*
@@ -258,12 +267,15 @@ app.post("/api/login", async (req, res) => {
         JOIN chat_room_users ON chat_rooms.id = chat_room_users.room_id
         WHERE chat_room_users.user_id = ? AND chat_room_users.role = 'tutor'
       `, [tutor[0].ID]);
-      res.json({ success: true, userId: tutor[0].ID, username: tutor[0].Tutor, role: 'tutor', rooms });
-      return;
+      return res.json({ success: true, userId: tutor[0].ID, username: tutor[0].Tutor, role: 'tutor', rooms });
     }
 
     // Buscar en la tabla de alumnos
-    const [alumno] = await db.query('SELECT * FROM alumnos WHERE Gmail = ? AND Contraseña = ?', [usuario, contrasena]);
+    const [alumno] = await db.query('SELECT * FROM alumnos WHERE Gmail = ? AND Contraseña = ?', [usuario, contrasena])
+      .catch(err => {
+        console.error("Error en consulta SQL para alumnos:", err);
+        throw err;
+      });
     if (alumno.length > 0) {
       const [rooms] = await db.query(`
         SELECT chat_rooms.*
@@ -271,10 +283,10 @@ app.post("/api/login", async (req, res) => {
         JOIN chat_room_users ON chat_rooms.id = chat_room_users.room_id
         WHERE chat_room_users.user_id = ? AND chat_room_users.role = 'alumno'
       `, [alumno[0].IDalumnos]);
-      res.json({ success: true, userId: alumno[0].IDalumnos, username: alumno[0].Nombre, role: 'alumno', rooms });
-      return;
+      return res.json({ success: true, userId: alumno[0].IDalumnos, username: alumno[0].Nombre, role: 'alumno', rooms });
     }
 
+    // Si no se encuentra en ninguna tabla
     res.status(401).json({ success: false, message: 'Credenciales incorrectas' });
   } catch (error) {
     console.error('Error en login:', error);
