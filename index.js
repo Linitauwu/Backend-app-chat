@@ -8,6 +8,7 @@ const db = require("./database.js");
 const path = require("path");
 const fs = require("fs");
 const multer = require("multer");
+<<<<<<< HEAD
 const PORT = process.env.PORT || 4000;
 const API_URL = process.env.API_URL || `http://localhost:${PORT}`;
 
@@ -31,6 +32,34 @@ const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: "*" }, // Abierto temporalmente
   transports: ['websocket', 'polling'] // Necesario para Render
+=======
+
+const PORT = process.env.PORT || 4000;
+const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
+app.use(cors({
+  origin: FRONTEND_URL,
+  methods: ["GET", "POST"],
+}));
+app.use(express.json());
+
+// Crear el directorio 'imagenes' si no existe
+const imageDir = path.join(__dirname, "imagenes");
+if (!fs.existsSync(imageDir)) {
+  fs.mkdirSync(imageDir);
+}
+
+// Serve static files from the 'imagenes' folder
+app.use('/imagenes', express.static(imageDir));
+
+const server = http.createServer(app);
+const io = new Server(server, {
+  cors: {
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+>>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
 });
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -78,10 +107,21 @@ const handleSubmit = async (e) => {
 
 // Configuración de multer para manejar la carga de archivos
 const storage = multer.diskStorage({
+<<<<<<< HEAD
   destination: (req, file, cb) => cb(null, imageDir),
   filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
 });
 const upload = multer({ storage });
+=======
+  destination: function (req, file, cb) {
+    cb(null, "imagenes/");
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + "-" + file.originalname);
+  },
+});
+const upload = multer({ storage: storage });
+>>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
 
 
 
@@ -286,9 +326,13 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ error: 'Error en login' });
   }
 });
+<<<<<<< HEAD
 app.get('/', (req, res) => {
   res.json({ mensaje: '¡Hola desde la API!' });
 });
+=======
+
+>>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
 // Obtener perfil de usuario
 app.get("/api/profile/:userId/:role", async (req, res) => {
   const { userId, role } = req.params;
@@ -367,7 +411,11 @@ app.get("/api/rooms", async (req, res) => {
   try {
     const [rooms] = await db.query(
       `SELECT id, name, description, 
+<<<<<<< HEAD
       CONCAT('/imagenes/', image_url) AS image_url, 
+=======
+      CONCAT('${BASE_URL}/imagenes/', image_url) AS image_url, 
+>>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
       is_private, average_rating 
       FROM chat_rooms`
     );
@@ -470,6 +518,7 @@ app.post("/joinRoom", async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 app.get('/', (req, res) => {
   res.json({ 
     message: "Backend funcionando ✅", 
@@ -477,6 +526,8 @@ app.get('/', (req, res) => {
     environment: process.env.NODE_ENV || 'development'
   });
 });
+=======
+>>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
 // Obtener detalles de una sala
 app.get("/getRoomDetails/:roomId", async (req, res) => {
   const { roomId } = req.params;
@@ -530,6 +581,7 @@ app.get("/historial/:roomId", async (req, res) => {
 });
 
 // Guardar mensaje
+<<<<<<< HEAD
 app.post("/api/register", upload.single('fotoPerfil'), async (req, res) => {
   const { tutor, descripcion, numero, gmail, contrasena } = req.body;
   const foto = req.file ? req.file.filename : null;
@@ -550,6 +602,24 @@ app.post("/api/register", upload.single('fotoPerfil'), async (req, res) => {
   } catch (err) {
     console.error("Error en DB:", err);
     res.status(500).json({ error: "Error al registrar tutor" });
+=======
+app.post("/saveMessage", async (req, res) => {
+  const { roomId, senderId, message, username, role } = req.body;
+
+  if (!roomId || !senderId || !message || !username || !role) {
+    return res.status(400).json({ message: "Faltan campos obligatorios" });
+  }
+
+  try {
+    const [result] = await db.query(
+      "INSERT INTO chat_messages (room_id, sender_id, username, role, message, created_at) VALUES (?, ?, ?, ?, ?, NOW())",
+      [roomId, senderId, username, role, message]
+    );
+    res.json({ messageId: result.insertId });
+  } catch (err) {
+    console.error("Error al guardar mensaje:", err);
+    res.status(500).json({ error: "Error al guardar mensaje" });
+>>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
   }
 });
 
@@ -754,7 +824,14 @@ io.on("connection", (socket) => {
 // INICIAR SERVIDOR
 // ==============================================
 
+<<<<<<< HEAD
 server.listen(4000, '0.0.0.0', () => {
   console.log(`Servidor corriendo en puerto 4000`);
  
 });
+=======
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en puerto ${PORT}`);
+});
+
+>>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
