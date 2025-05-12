@@ -731,7 +731,8 @@ io.on("connection", (socket) => {
 // INICIAR SERVIDOR
 // ==============================================
 
-const PORT = process.env.SERVER_PORT || 4000;
-server.listen(PORT, () => {
+const PORT = process.env.PORT || 4000;
+
+app.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
