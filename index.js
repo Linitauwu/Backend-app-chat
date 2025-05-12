@@ -15,6 +15,21 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:5173", // Para pruebas locales
+  "https://frontend-app.netlify.app", // URL del frontend desplegado (modifica según tu caso)
+  "https://backend-app-chat.onrender.com", // URL del backend desplegado
+];
+
+app.use(
+  cors({
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true, // Permite el uso de cookies o encabezados de autenticación
+  })
+);
+
+
 
 // Crear el directorio de imágenes si no existe
 const imageDir = path.join(__dirname, process.env.UPLOADS_DIR || 'imagenes');
@@ -28,10 +43,13 @@ app.use('/imagenes', express.static(imageDir));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173" || "https://backend-app-chat.onrender.com",
-    methods: ["GET", "POST"],
+    origin: ["http://localhost:5173", "http://10.0.2.2:5173"], // Incluye el emulador si estás usando Android Studio
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   },
 });
+
 
 
 const connection = mysql.createConnection(process.env.DATABASE_URL);
