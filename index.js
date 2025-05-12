@@ -1,133 +1,80 @@
-require('dotenv').config();
+
+
 const express = require("express");
 const app = express();
 const http = require("http");
 const cors = require("cors");
 const { Server } = require("socket.io");
 const db = require("./database.js");
-const path = require("path");
-const fs = require("fs");
-const multer = require("multer");
-<<<<<<< HEAD
-const PORT = process.env.PORT || 4000;
-const API_URL = process.env.API_URL || `http://localhost:${PORT}`;
+const mysql = require('mysql2');
+const path = require('path');
+const fs = require('fs');
+const multer = require('multer');
+require('dotenv').config();
 
-
-app.use(cors({
-  origin: "*", // Permite cualquier origen (cámbialo luego a tu URL de frontend)
-  methods: ["GET", "POST", "PUT", "DELETE"] // Añade todos los métodos necesarios
-}));
-
-const imageDir = path.join(__dirname, "imagenes");
-if (!fs.existsSync(imageDir)) {
-  fs.mkdirSync(imageDir, { recursive: true });
-}
-app.use('/imagenes', express.static(imageDir));
-// Serve static files from the 'imagenes' folder
-
-
-
-
-const server = http.createServer(app);
-const io = new Server(server, {
-  cors: { origin: "*" }, // Abierto temporalmente
-  transports: ['websocket', 'polling'] // Necesario para Render
-=======
-
-const PORT = process.env.PORT || 4000;
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-
-app.use(cors({
-  origin: FRONTEND_URL,
-  methods: ["GET", "POST"],
-}));
+app.use(cors());
 app.use(express.json());
 
-// Crear el directorio 'imagenes' si no existe
-const imageDir = path.join(__dirname, "imagenes");
+// Crear el directorio de imágenes si no existe
+const imageDir = path.join(__dirname, process.env.UPLOADS_DIR || 'imagenes');
 if (!fs.existsSync(imageDir)) {
   fs.mkdirSync(imageDir);
 }
 
-// Serve static files from the 'imagenes' folder
+// Servir archivos estáticos desde la carpeta 'imagenes'
 app.use('/imagenes', express.static(imageDir));
 
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173",
     methods: ["GET", "POST"],
   },
->>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
 });
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  console.log("Formulario enviado"); // Verifica que esto aparece en la consola
 
-  if (
-    !formData.tutor ||
-    !formData.descripcion ||
-    !formData.foto ||
-    !formData.email ||
-    !formData.contrasena ||
-    !formData.telefono
-  ) {
-    setError("Faltan campos requeridos");
+const connection = mysql.createConnection(process.env.DATABASE_URL);
+
+connection.connect((err) => {
+  if (err) {
+    console.error('Error al conectar con la base de datos:', err.stack);
     return;
   }
-
-  const form = new FormData();
-  form.append("tutor", formData.tutor);
-  form.append("descripcion", formData.descripcion);
-  form.append("numero", formData.telefono);
-  form.append("gmail", formData.email);
-  form.append("contrasena", formData.contrasena);
-  form.append("fotoPerfil", formData.foto);
-
-  try {
-    const response = await fetch("http://localhost:4000/api/register", {
-      method: "POST",
-      body: form,
-    });
-
-    if (response.ok) {
-      alert("Registro exitoso");
-      navigate("/login");
-    } else {
-      const errorData = await response.json();
-      console.error("Error en backend:", errorData);
-      setError(errorData.error || "Error al registrar");
-    }
-  } catch (err) {
-    console.error("Error en la solicitud:", err);
-    setError("Error al conectar con el servidor");
-  }
-};
+  console.log('Conexión exitosa con la base de datos MySQL');
+});
 
 // Configuración de multer para manejar la carga de archivos
 const storage = multer.diskStorage({
-<<<<<<< HEAD
-  destination: (req, file, cb) => cb(null, imageDir),
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
-});
-const upload = multer({ storage });
-=======
   destination: function (req, file, cb) {
-    cb(null, "imagenes/");
+    cb(null, process.env.UPLOADS_DIR || 'imagenes/');
   },
   filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
+    cb(null, Date.now() + '-' + file.originalname);
+  }
 });
 const upload = multer({ storage: storage });
->>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
-
-
 
 // ==============================================
 // ENDPOINTS DE USUARIO
 // ==============================================
+app.get("/api/alumnos", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT * FROM alumnos");
+    res.status(200).json(rows);
+  } catch (err) {
+    console.error("Error al listar alumnos:", err);
+    res.status(500).json({ error: "Error al obtener la lista de alumnos" });
+  }
+});
+
+
+app.get("/test", async (req, res) => {
+  try {
+    const [rows] = await db.query("SELECT 1");
+    res.send(rows);
+  } catch (err) {
+    res.status(500).send("Error: " + err.message);
+  }
+});
 
 app.post("/api/registerAlumno", upload.single("fotoPerfil"), async (req, res) => {
   const { nombre, grado, carrera, gmail, numero, contrasena } = req.body;
@@ -149,7 +96,8 @@ app.post("/api/registerAlumno", upload.single("fotoPerfil"), async (req, res) =>
   }
 });
 
-app.use('/guias', express.static(path.join(__dirname, 'guias')));
+// Servir archivos estáticos desde la carpeta 'guias'
+app.use('/guias', express.static(path.join(__dirname, process.env.GUIDES_DIR || 'guias')));
 
 // Endpoint de registro para tutores
 app.post("/api/register", upload.single('fotoPerfil'), async (req, res) => {
@@ -281,42 +229,33 @@ app.post("/api/saveExamResults", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   const { usuario, contrasena } = req.body;
 
-  // Validar que los campos no estén vacíos
-  if (!usuario || !contrasena) {
-    return res.status(400).json({ error: "El campo usuario y contrasena son obligatorios" });
-  }
-
   try {
     // Buscar en la tabla de tutores
-    const [tutor] = await db.query('SELECT * FROM tutor WHERE Tutor = ? AND Contrasena = ?', [usuario, contrasena])
-      .catch(err => {
-        console.error("Error en consulta SQL para tutor:", err);
-        throw err;
-      });
+    const [tutor] = await db.query('SELECT * FROM tutor WHERE Tutor = ? AND Contrasena = ?', [usuario, contrasena]);
     if (tutor.length > 0) {
+      // Obtener las salas a las que el tutor está unido
       const [rooms] = await db.query(`
         SELECT chat_rooms.*
         FROM chat_rooms
         JOIN chat_room_users ON chat_rooms.id = chat_room_users.room_id
         WHERE chat_room_users.user_id = ? AND chat_room_users.role = 'tutor'
       `, [tutor[0].ID]);
-      return res.json({ success: true, userId: tutor[0].ID, username: tutor[0].Tutor, role: 'tutor', rooms });
+      res.json({ success: true, userId: tutor[0].ID, username: tutor[0].Tutor, role: 'tutor', rooms });
+      return;
     }
 
     // Buscar en la tabla de alumnos
-    const [alumno] = await db.query('SELECT * FROM alumnos WHERE Gmail = ? AND Contraseña = ?', [usuario, contrasena])
-      .catch(err => {
-        console.error("Error en consulta SQL para alumnos:", err);
-        throw err;
-      });
+    const [alumno] = await db.query('SELECT * FROM alumnos WHERE Gmail = ? AND Contraseña = ?', [usuario, contrasena]);
     if (alumno.length > 0) {
+      // Obtener las salas a las que el alumno está unido
       const [rooms] = await db.query(`
         SELECT chat_rooms.*
         FROM chat_rooms
         JOIN chat_room_users ON chat_rooms.id = chat_room_users.room_id
         WHERE chat_room_users.user_id = ? AND chat_room_users.role = 'alumno'
       `, [alumno[0].IDalumnos]);
-      return res.json({ success: true, userId: alumno[0].IDalumnos, username: alumno[0].Nombre, role: 'alumno', rooms });
+      res.json({ success: true, userId: alumno[0].IDalumnos, username: alumno[0].Nombre, role: 'alumno', rooms });
+      return;
     }
 
     // Si no se encuentra en ninguna tabla
@@ -326,13 +265,7 @@ app.post("/api/login", async (req, res) => {
     res.status(500).json({ error: 'Error en login' });
   }
 });
-<<<<<<< HEAD
-app.get('/', (req, res) => {
-  res.json({ mensaje: '¡Hola desde la API!' });
-});
-=======
 
->>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
 // Obtener perfil de usuario
 app.get("/api/profile/:userId/:role", async (req, res) => {
   const { userId, role } = req.params;
@@ -410,14 +343,7 @@ app.post("/createRoom", upload.single('fotoSala'), async (req, res) => {
 app.get("/api/rooms", async (req, res) => {
   try {
     const [rooms] = await db.query(
-      `SELECT id, name, description, 
-<<<<<<< HEAD
-      CONCAT('/imagenes/', image_url) AS image_url, 
-=======
-      CONCAT('${BASE_URL}/imagenes/', image_url) AS image_url, 
->>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
-      is_private, average_rating 
-      FROM chat_rooms`
+      `SELECT id, name, description, CONCAT('${process.env.BASE_URL}/imagenes/', image_url) AS image_url, is_private, average_rating FROM chat_rooms`
     );
     res.json(rooms);
   } catch (err) {
@@ -452,6 +378,7 @@ app.get("/userRooms/:userId/:role", async (req, res) => {
     res.status(500).json({ error: "Error al obtener las salas del usuario" });
   }
 });
+
 // Unirse a una sala
 app.post("/joinRoom", async (req, res) => {
   const { roomId, password, userId, role } = req.body;
@@ -518,16 +445,6 @@ app.post("/joinRoom", async (req, res) => {
   }
 });
 
-<<<<<<< HEAD
-app.get('/', (req, res) => {
-  res.json({ 
-    message: "Backend funcionando ✅", 
-    apiUrl: API_URL,
-    environment: process.env.NODE_ENV || 'development'
-  });
-});
-=======
->>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
 // Obtener detalles de una sala
 app.get("/getRoomDetails/:roomId", async (req, res) => {
   const { roomId } = req.params;
@@ -581,28 +498,6 @@ app.get("/historial/:roomId", async (req, res) => {
 });
 
 // Guardar mensaje
-<<<<<<< HEAD
-app.post("/api/register", upload.single('fotoPerfil'), async (req, res) => {
-  const { tutor, descripcion, numero, gmail, contrasena } = req.body;
-  const foto = req.file ? req.file.filename : null;
-
-  if (!tutor || !descripcion || !contrasena || !foto) {
-    return res.status(400).json({ error: "Faltan campos obligatorios" });
-  }
-
-  try {
-    await db.query(
-      "INSERT INTO tutor (Tutor, Descripcion, Numero, Gmail, Contrasena, Foto) VALUES (?, ?, ?, ?, ?, ?)",
-      [tutor, descripcion, numero, gmail, contrasena, foto]
-    );
-    res.status(201).json({ 
-      success: true,
-      imageUrl: `${API_URL}/imagenes/${foto}` // URL accesible desde cualquier lugar
-    });
-  } catch (err) {
-    console.error("Error en DB:", err);
-    res.status(500).json({ error: "Error al registrar tutor" });
-=======
 app.post("/saveMessage", async (req, res) => {
   const { roomId, senderId, message, username, role } = req.body;
 
@@ -619,7 +514,6 @@ app.post("/saveMessage", async (req, res) => {
   } catch (err) {
     console.error("Error al guardar mensaje:", err);
     res.status(500).json({ error: "Error al guardar mensaje" });
->>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
   }
 });
 
@@ -661,8 +555,8 @@ app.get("/api/ratings", async (req, res) => {
     const formattedRatings = ratings.map(rating => ({
       ...rating,
       user_photo: rating.user_photo 
-        ? `http://localhost:4000/imagenes/${rating.user_photo}`
-        : 'http://localhost:4000/imagenes/default.jpg'
+        ? `${process.env.BASE_URL}/imagenes/${rating.user_photo}`
+        : `${process.env.BASE_URL}/imagenes/default.jpg`
     }));
     
     res.json(formattedRatings);
@@ -745,8 +639,8 @@ app.post("/api/ratings", async (req, res) => {
       rating: {
         ...newRating[0],
         user_photo: newRating[0].user_photo 
-          ? `http://localhost:4000/imagenes/${newRating[0].user_photo}`
-          : 'http://localhost:4000/imagenes/default.jpg'
+          ? `${process.env.BASE_URL}/imagenes/${newRating[0].user_photo}`
+          : `${process.env.BASE_URL}/imagenes/default.jpg`
       }
     });
 
@@ -758,12 +652,25 @@ app.post("/api/ratings", async (req, res) => {
     });
   }
 });
+
 // ==============================================
 // SOCKET.IO CONFIGURATION
 // ==============================================
 
 io.on("connection", (socket) => {
   console.log("Nuevo usuario conectado:", socket.id);
+
+  // Unirse a una sala de chat
+  socket.on("join_room", (room) => {
+    if (!room) {
+      console.error("Sala no especificada");
+      return;
+    }
+
+    console.log("Intentando unirse a la sala:", room);
+    socket.join(room);
+    console.log(`Usuario unido a la sala: ${room}`);
+  });
 
   // Unirse a una sala de ratings
   socket.on("join_rating_room", (roomId) => {
@@ -819,19 +726,11 @@ io.on("connection", (socket) => {
   });
 });
 
-
 // ==============================================
 // INICIAR SERVIDOR
 // ==============================================
 
-<<<<<<< HEAD
-server.listen(4000, '0.0.0.0', () => {
-  console.log(`Servidor corriendo en puerto 4000`);
- 
-});
-=======
+const PORT = process.env.SERVER_PORT || 4000;
 server.listen(PORT, () => {
   console.log(`Servidor corriendo en puerto ${PORT}`);
 });
-
->>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
