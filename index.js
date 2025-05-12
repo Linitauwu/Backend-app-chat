@@ -15,12 +15,6 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
-const res = await fetch(`${import.meta.env.VITE_API_URL}/login`, {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ usuario, contraseña })
-});
-
 
 // Crear el directorio de imágenes si no existe
 const imageDir = path.join(__dirname, process.env.UPLOADS_DIR || 'imagenes');
