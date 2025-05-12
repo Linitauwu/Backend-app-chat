@@ -9,6 +9,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@capacitor/android": "^7.2.0",
+    "@capacitor/cli": "^7.2.0",
+    "@capacitor/core": "^7.2.0",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
     "express": "^4.21.2",
@@ -25,8 +28,4 @@
   },
   "keywords": [],
   "description": ""
-<<<<<<< HEAD
-=======
-  
->>>>>>> 6ea1dbf4169d828136e5ebc3fc02835e06f4aac0
 }
