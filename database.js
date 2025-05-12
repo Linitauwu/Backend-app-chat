@@ -2,7 +2,7 @@ const mysql = require('mysql2/promise');
 
 // Crear el pool de conexiones
 const pool = mysql.createPool({
-  host: process.env.DB_HOST || 'mysql.railway.internal',         // Dirección del servidor, por defecto 'localhost'
+  host: process.env.DB_HOST || 'mysql.railway.app', // Asegúrate de usar el host correcto proporcionado por Railway        // Dirección del servidor, por defecto 'localhost'
   user: process.env.DB_USER || 'root',             // Usuario por defecto 'root'
   password: process.env.DB_PASSWORD || 'MUPZXvExsjosBGlooTkSyzgNqasQRdMU',         // Contraseña (si está configurada)
   database: process.env.DB_NAME || 'tutores',      // Nombre de la base de datos
