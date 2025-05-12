@@ -27,10 +27,11 @@ app.use('/imagenes', express.static(imageDir));
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: process.env.CLIENT_URL || "http://localhost:5173" || "https://backend-app-chat.onrender.com",
     methods: ["GET", "POST"],
   },
 });
+
 
 const connection = mysql.createConnection(process.env.DATABASE_URL);
 
