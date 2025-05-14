@@ -15,19 +15,8 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
-const allowedOrigins = [
-  "http://localhost:5173", // Para pruebas locales
-  "https://frontend-app.netlify.app", // URL del frontend desplegado (modifica según tu caso)
-  "https://backend-app-chat.onrender.com", // URL del backend desplegado
-];
 
-app.use(
-  cors({
-    origin: allowedOrigins,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Permite el uso de cookies o encabezados de autenticación
-  })
-);
+
 
 
 
