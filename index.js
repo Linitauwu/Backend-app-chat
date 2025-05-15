@@ -19,7 +19,7 @@ if (!fs.existsSync(imageDir)) {
   fs.mkdirSync(imageDir);
 }
 
-["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "PORT", "GUIDES_DIR"].forEach((key) => {
+["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "PORT", ].forEach((key) => {
   if (!process.env[key]) {
     console.error(`⚠️  Falta la variable de entorno: ${key}`);
     process.exit(1);
