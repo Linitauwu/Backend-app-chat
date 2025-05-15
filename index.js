@@ -1,8 +1,3 @@
-
-<<<<<<< HEAD
-=======
-
->>>>>>> ee0e216f0f3776b70a5e237f906cadfa053de9f8
 const express = require("express");
 const app = express();
 const http = require("http");
@@ -18,14 +13,6 @@ require('dotenv').config();
 app.use(cors());
 app.use(express.json());
 
-
-<<<<<<< HEAD
-=======
-
-
-
-
->>>>>>> ee0e216f0f3776b70a5e237f906cadfa053de9f8
 // Crear el directorio de imágenes si no existe
 const imageDir = path.join(__dirname, process.env.UPLOADS_DIR || 'imagenes');
 if (!fs.existsSync(imageDir)) {
