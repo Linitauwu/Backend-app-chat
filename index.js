@@ -13,10 +13,7 @@ const PORT = process.env.PORT || 4000;
 const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-app.use(cors({
-  origin: FRONTEND_URL,
-  methods: ["GET", "POST"],
-}));
+app.use(cors());
 app.use(express.json());
 
 // Crear el directorio 'imagenes' si no existe
