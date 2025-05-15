@@ -19,15 +19,20 @@ if (!fs.existsSync(imageDir)) {
   fs.mkdirSync(imageDir);
 }
 
-["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "PORT", "UPLOADS_DIR", "GUIDES_DIR"]
-  .forEach((key) => {
-    if (!process.env[key]) {
-      console.error(`⚠️  Falta la variable de entorno: ${key}`);
-      process.exit(1); // Detener la aplicación si falta alguna variable
-    }
-  });
+["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "PORT", "GUIDES_DIR"].forEach((key) => {
+  if (!process.env[key]) {
+    console.error(`⚠️  Falta la variable de entorno: ${key}`);
+    process.exit(1);
+  }
+});
 
-  
+// Proveer un valor por defecto para UPLOADS_DIR si no existe
+if (!process.env.UPLOADS_DIR) {
+  console.warn("⚠️  La variable UPLOADS_DIR no está configurada. Usando el valor por defecto: 'imagenes'.");
+  process.env.UPLOADS_DIR = "imagenes";
+}
+
+
 // Servir archivos estáticos desde la carpeta 'imagenes'
 app.use('/imagenes', express.static(imageDir));
 
