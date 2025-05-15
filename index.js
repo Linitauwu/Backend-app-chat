@@ -19,7 +19,7 @@ if (!fs.existsSync(imageDir)) {
   fs.mkdirSync(imageDir);
 }
 
-["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "PORT", "GUIDES_DIR"].forEach((key) => {
+["DB_HOST", "DB_PORT", "DB_USER", "DB_PASSWORD", "DB_NAME", "PORT",].forEach((key) => {
   if (!process.env[key]) {
     console.error(`⚠️  Falta la variable de entorno: ${key}`);
     process.exit(1);
@@ -32,11 +32,7 @@ if (!process.env.UPLOADS_DIR) {
   process.env.UPLOADS_DIR = "imagenes";
 }
 
-// Proveer un valor por defecto para GUIDES_DIR si no existe
-if (!process.env.GUIDES_DIR) {
-  console.warn("⚠️  La variable GUIDES_DIR no está configurada. Usando el valor por defecto: 'guias'.");
-  process.env.GUIDES_DIR = "guias";
-}
+
 
 // Servir archivos estáticos desde la carpeta 'imagenes'
 app.use('/imagenes', express.static(imageDir));
