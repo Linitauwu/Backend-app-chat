@@ -13,6 +13,7 @@ require("dotenv").config();
 app.use(cors());
 app.use(express.json());
 
+app.use('/imagenes', express.static(path.join(__dirname, 'imagenes')));
 
 // Configuración de almacenamiento de Multer
 const storage = multer.diskStorage({
