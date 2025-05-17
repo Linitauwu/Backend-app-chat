@@ -13,6 +13,30 @@ require("dotenv").config();
 app.use(cors());
 app.use(express.json());
 
+
+// Configuración de almacenamiento de Multer
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    // Indica la carpeta donde se guardarán las imágenes
+    cb(null, path.join(__dirname, 'imagenes'));
+  },
+  filename: function (req, file, cb) {
+    // Nombre con el que se guardará el archivo (aquí se mantiene el original)
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// Ruta para subir la imagen
+app.post('/upload', upload.single('foto'), (req, res) => {
+  if (!req.file) {
+    return res.status(400).send('No se subió ningún archivo.');
+  }
+  res.send('Archivo subido y guardado en carpeta imagenes: ' + req.file.filename);
+});
+
+
 // Crear el directorio de imágenes si no existe
 const imageDir = path.join(__dirname, process.env.UPLOADS_DIR || 'imagenes');
 if (!fs.existsSync(imageDir)) {
@@ -47,16 +71,6 @@ const io = new Server(server, {
   },
 });
 
-// Configuración de multer para manejar la carga de archivos
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, process.env.UPLOADS_DIR || "imagenes/");
-  },
-  filename: function (req, file, cb) {
-    cb(null, Date.now() + "-" + file.originalname);
-  },
-});
-const upload = multer({ storage: storage });
 
 // ==============================================
 // ENDPOINTS DE USUARIO
